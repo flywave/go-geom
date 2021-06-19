@@ -234,6 +234,9 @@ func BoundingBoxFromPoints(pts [][]float64) BoundingBox {
 	west, south, east, north := 180.0, 90.0, -180.0, -90.0
 
 	for _, pt := range pts {
+		if pt == nil {
+			continue
+		}
 		x, y := pt[0], pt[1]
 		if x < west {
 			west = x
