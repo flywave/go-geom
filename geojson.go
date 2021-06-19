@@ -189,6 +189,10 @@ func (g *GeometryData) UnmarshalJSON(data []byte) error {
 	return DecodeGeometry(g, object)
 }
 
+func (g *GeometryData) GetType() string {
+	return string(g.Type)
+}
+
 func (g *GeometryData) Scan(value interface{}) error {
 	var data []byte
 
