@@ -27,32 +27,32 @@ func ConvertToGeom(g *geom_.GeometryData, srsid *uint32) (geom.Geometry, geom.Di
 	case "Point":
 		if len(g.Point) == 3 {
 			dim = geom.XYZ
-			geo = &geom.Point{geom.Hdr{geom.XYZ, sid}, g.Point}
+			geo = &geom.Point{Hdr: geom.Hdr{Dim: geom.XYZ, Srid: sid}, Coordinate: g.Point}
 		} else {
 			dim = geom.XY
-			geo = &geom.Point{geom.Hdr{geom.XY, sid}, g.Point}
+			geo = &geom.Point{Hdr: geom.Hdr{Dim: geom.XY, Srid: sid}, Coordinate: g.Point}
 		}
 	case "MultiPoint":
 		var mp geom.MultiPoint
 		if len(g.MultiPoint) > 0 && len(g.MultiPoint[0]) == 3 {
 			dim = geom.XYZ
-			mp = geom.MultiPoint{Hdr: geom.Hdr{geom.XYZ, sid}}
+			mp = geom.MultiPoint{Hdr: geom.Hdr{Dim: geom.XYZ, Srid: sid}}
 		} else {
 			dim = geom.XY
-			mp = geom.MultiPoint{Hdr: geom.Hdr{geom.XY, sid}}
+			mp = geom.MultiPoint{Hdr: geom.Hdr{Dim: geom.XY, Srid: sid}}
 		}
 		for i := range g.MultiPoint {
-			mp.Points = append(mp.Points, geom.Point{geom.Hdr{geom.XY, sid}, g.MultiPoint[i]})
+			mp.Points = append(mp.Points, geom.Point{Hdr: geom.Hdr{Dim: geom.XY, Srid: sid}, Coordinate: g.MultiPoint[i]})
 		}
 		geo = &mp
 	case "LineString":
 		var mp geom.LineString
 		if len(g.LineString) > 0 && len(g.LineString[0]) == 3 {
 			dim = geom.XYZ
-			mp = geom.LineString{Hdr: geom.Hdr{geom.XYZ, sid}}
+			mp = geom.LineString{Hdr: geom.Hdr{Dim: geom.XYZ, Srid: sid}}
 		} else {
 			dim = geom.XY
-			mp = geom.LineString{Hdr: geom.Hdr{geom.XY, sid}}
+			mp = geom.LineString{Hdr: geom.Hdr{Dim: geom.XY, Srid: sid}}
 		}
 		for i := range g.LineString {
 			mp.Coordinates = append(mp.Coordinates, g.LineString[i])
@@ -62,13 +62,13 @@ func ConvertToGeom(g *geom_.GeometryData, srsid *uint32) (geom.Geometry, geom.Di
 		var mp geom.MultiLineString
 		if len(g.MultiLineString) > 0 && len(g.MultiLineString[0]) > 0 && len(g.MultiLineString[0][0]) == 3 {
 			dim = geom.XYZ
-			mp = geom.MultiLineString{Hdr: geom.Hdr{dim, sid}}
+			mp = geom.MultiLineString{Hdr: geom.Hdr{Dim: dim, Srid: sid}}
 		} else {
 			dim = geom.XY
-			mp = geom.MultiLineString{Hdr: geom.Hdr{dim, sid}}
+			mp = geom.MultiLineString{Hdr: geom.Hdr{Dim: dim, Srid: sid}}
 		}
 		for i := range g.MultiLineString {
-			l := geom.LineString{Hdr: geom.Hdr{dim, 0}}
+			l := geom.LineString{Hdr: geom.Hdr{Dim: dim, Srid: 0}}
 			for j := range g.MultiLineString[i] {
 				l.Coordinates = append(l.Coordinates, g.MultiLineString[i][j])
 			}
@@ -79,10 +79,10 @@ func ConvertToGeom(g *geom_.GeometryData, srsid *uint32) (geom.Geometry, geom.Di
 		var mp geom.Polygon
 		if len(g.Polygon) > 0 && len(g.Polygon[0]) > 0 && len(g.Polygon[0][0]) == 3 {
 			dim = geom.XYZ
-			mp = geom.Polygon{Hdr: geom.Hdr{geom.XYZ, sid}}
+			mp = geom.Polygon{Hdr: geom.Hdr{Dim: geom.XYZ, Srid: sid}}
 		} else {
 			dim = geom.XY
-			mp = geom.Polygon{Hdr: geom.Hdr{geom.XY, sid}}
+			mp = geom.Polygon{Hdr: geom.Hdr{Dim: geom.XY, Srid: sid}}
 		}
 		for i := range g.Polygon {
 			l := geom.LinearRing{}
@@ -96,13 +96,13 @@ func ConvertToGeom(g *geom_.GeometryData, srsid *uint32) (geom.Geometry, geom.Di
 		var mp geom.MultiPolygon
 		if len(g.MultiPolygon) > 0 && len(g.MultiPolygon[0]) > 0 && len(g.MultiPolygon[0][0]) > 0 && len(g.MultiPolygon[0][0][0]) == 3 {
 			dim = geom.XYZ
-			mp = geom.MultiPolygon{Hdr: geom.Hdr{dim, sid}}
+			mp = geom.MultiPolygon{Hdr: geom.Hdr{Dim: dim, Srid: sid}}
 		} else {
 			dim = geom.XY
-			mp = geom.MultiPolygon{Hdr: geom.Hdr{dim, sid}}
+			mp = geom.MultiPolygon{Hdr: geom.Hdr{Dim: dim, Srid: sid}}
 		}
 		for i := range g.MultiPolygon {
-			pol := geom.Polygon{Hdr: geom.Hdr{dim, 0}}
+			pol := geom.Polygon{Hdr: geom.Hdr{Dim: dim, Srid: 0}}
 			for j := range g.MultiPolygon[i] {
 
 				l := geom.LinearRing{}
@@ -115,7 +115,7 @@ func ConvertToGeom(g *geom_.GeometryData, srsid *uint32) (geom.Geometry, geom.Di
 		}
 		geo = &mp
 	case "GeometryCollection":
-		mp := geom.GeometryCollection{Hdr: geom.Hdr{geom.XYZ, sid}}
+		mp := geom.GeometryCollection{Hdr: geom.Hdr{Dim: geom.XYZ, Srid: sid}}
 		for i := range g.Geometries {
 			ge, d := ConvertToGeom(g.Geometries[i], srsid)
 			mp.Geometries = append(mp.Geometries, ge)
