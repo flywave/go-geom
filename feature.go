@@ -68,7 +68,7 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 
 	var data GeometryData
 	if f.Geometry != nil {
-		data = *NewGeometryData(*f.Geometry)
+		data = *NewGeometryData(f.Geometry)
 	} else {
 		data = f.GeometryData
 	}
@@ -332,7 +332,7 @@ func BoundingBoxFromMultiPolygonGeometry(multipolygon [][][][]float64) BoundingB
 	return ExpandBoundingBoxs(bboxs)
 }
 
-func BoundingBoxFromGeometryCollection(gs []*Geometry) BoundingBox {
+func BoundingBoxFromGeometryCollection(gs []Geometry) BoundingBox {
 	bboxs := []BoundingBox{}
 	for _, g := range gs {
 		bboxs = append(bboxs, BoundingBoxFromGeometry(g))
@@ -341,7 +341,7 @@ func BoundingBoxFromGeometryCollection(gs []*Geometry) BoundingBox {
 }
 
 func BoundingBoxFromGeometry(g Geometry) BoundingBox {
-	switch t := (*g).(type) {
+	switch t := (g).(type) {
 	case Point:
 	case Point3:
 		return BoundingBoxFromPointGeometry(t.Data())
@@ -443,7 +443,7 @@ func CheckProperties(p1, p2 map[string]interface{}) bool {
 }
 
 func IsFeatureEqual(feat1, feat2 Feature) bool {
-	return IsGeometryEqual(*feat1.Geometry, *feat2.Geometry) && CheckProperties(feat1.Properties, feat2.Properties)
+	return IsGeometryEqual(feat1.Geometry, feat2.Geometry) && CheckProperties(feat1.Properties, feat2.Properties)
 }
 
 func ConvertFeatureID(v interface{}) (uint64, error) {
