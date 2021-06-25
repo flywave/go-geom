@@ -72,7 +72,7 @@ func Extented(extent1, extent2 [4]float64) bool {
 }
 
 // GeomExtent will check to see if BoundingBox's are the same.
-func GeomExtent(extent1, extent2 geom.Extenter) bool {
+func GeomExtent(extent1, extent2 Extenter) bool {
 	return Extented(extent1.Extent(), extent2.Extent())
 }
 
@@ -162,11 +162,11 @@ func PolygonEqual(ply1, ply2 [][][]float64) bool {
 	for i := range ply1 {
 		points1 = append(points1, ply1[i]...)
 	}
-	extent1 := geom.NewExtent(points1...)
+	extent1 := NewExtent(points1...)
 	for i := range ply2 {
 		points2 = append(points2, ply2[i]...)
 	}
-	extent2 := geom.NewExtent(points2...)
+	extent2 := NewExtent(points2...)
 	if !GeomExtent(extent1, extent2) {
 		return false
 	}

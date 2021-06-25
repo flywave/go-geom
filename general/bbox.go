@@ -1,7 +1,9 @@
-package geom
+package general
 
 import (
 	"math"
+
+	"github.com/flywave/go-geom"
 )
 
 // Extenter represents an interface that returns a boundbox.
@@ -152,14 +154,14 @@ func (e *Extent) AddPoints(points ...[]float64) {
 }
 
 // AddPointers will expand the Extent if a point is outside it
-func (e *Extent) AddPointers(pts ...Point) {
+func (e *Extent) AddPointers(pts ...geom.Point) {
 	for i := range pts {
 		e.AddPoints(pts[i].Data())
 	}
 }
 
 // AddGeometry expands the specified envelop to contain g.
-func (e *Extent) AddGeometry(g Geometry) error {
+func (e *Extent) AddGeometry(g geom.Geometry) error {
 	return getExtent(g, e)
 }
 
@@ -232,8 +234,8 @@ func NewExtentFromPoints(points ...Point) *Extent {
 }
 
 // NewExtentFromGeometry tries to create an extent based on the geometry
-func NewExtentFromGeometry(g Geometry) (*Extent, error) {
-	var pts []Point
+func NewExtentFromGeometry(g geom.Geometry) (*Extent, error) {
+	var pts []geom.Point
 	if err := getCoordinates(g, &pts); err != nil {
 		return nil, err
 	}
@@ -308,7 +310,7 @@ func (e *Extent) ContainsLine(l [2][2]float64) bool {
 }
 
 // ContainsGeom will return weather the given geometry is completely inside of the extent.
-func (e *Extent) ContainsGeom(g Geometry) (bool, error) {
+func (e *Extent) ContainsGeom(g geom.Geometry) (bool, error) {
 	if e.IsUniverse() {
 		return true, nil
 	}

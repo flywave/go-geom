@@ -524,7 +524,7 @@ func getExtent(g geom.Geometry, e *Extent) error {
 	case geom.MultiLine:
 
 		for _, ls := range gg.Lines() {
-			if err := getExtent(LineString(ls), e); err != nil {
+			if err := getExtent(ls, e); err != nil {
 				return err
 			}
 		}
@@ -533,7 +533,7 @@ func getExtent(g geom.Geometry, e *Extent) error {
 	case geom.Polygon:
 
 		for _, ls := range gg.Sublines() {
-			if err := getExtent(LineString(ls), e); err != nil {
+			if err := getExtent(ls, e); err != nil {
 				return err
 			}
 		}
@@ -542,7 +542,7 @@ func getExtent(g geom.Geometry, e *Extent) error {
 	case geom.MultiPolygon:
 
 		for _, p := range gg.Polygons() {
-			if err := getExtent(Polygon(p), e); err != nil {
+			if err := getExtent(p, e); err != nil {
 				return err
 			}
 		}
@@ -560,7 +560,7 @@ func getExtent(g geom.Geometry, e *Extent) error {
 	}
 }
 
-func getCoordinates(g geom.Geometry, pts *[]Point) error {
+func getCoordinates(g geom.Geometry, pts *[]geom.Point) error {
 	switch gg := g.(type) {
 
 	default:
@@ -576,7 +576,7 @@ func getCoordinates(g geom.Geometry, pts *[]Point) error {
 
 		mpts := gg.Points()
 		for i := range mpts {
-			*pts = append(*pts, NewPoint(mpts[i]))
+			*pts = append(*pts, NewPoint(mpts[i].Data()))
 		}
 		return nil
 
@@ -591,7 +591,7 @@ func getCoordinates(g geom.Geometry, pts *[]Point) error {
 	case geom.MultiLine:
 
 		for _, ls := range gg.Lines() {
-			if err := getCoordinates(LineString(ls), pts); err != nil {
+			if err := getCoordinates(ls, pts); err != nil {
 				return err
 			}
 		}
@@ -600,7 +600,7 @@ func getCoordinates(g geom.Geometry, pts *[]Point) error {
 	case geom.Polygon:
 
 		for _, ls := range gg.Sublines() {
-			if err := getCoordinates(LineString(ls), pts); err != nil {
+			if err := getCoordinates(ls, pts); err != nil {
 				return err
 			}
 		}
@@ -609,7 +609,7 @@ func getCoordinates(g geom.Geometry, pts *[]Point) error {
 	case geom.MultiPolygon:
 
 		for _, p := range gg.Polygons() {
-			if err := getCoordinates(Polygon(p), pts); err != nil {
+			if err := getCoordinates(p, pts); err != nil {
 				return err
 			}
 		}
