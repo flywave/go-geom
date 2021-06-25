@@ -1,6 +1,10 @@
 package general
 
-import "github.com/flywave/go-geom"
+import (
+	"errors"
+
+	"github.com/flywave/go-geom"
+)
 
 type Coordinate []float64
 
@@ -330,28 +334,28 @@ func (c MultiPoint3) Empty() bool {
 	return len(c.points) == 0
 }
 
-type MultiLineString struct {
+type MultiLine struct {
 	lines []geom.LineString
 	srid  int
 }
 
-func NewMultiLineString(pts [][][]float64) *MultiLineString {
+func NewMultiLineString(pts [][][]float64) *MultiLine {
 	rets := make([]geom.LineString, len(pts))
 	for i := range pts {
 		rets[i] = NewLineString(pts[i])
 	}
-	return &MultiLineString{lines: rets}
+	return &MultiLine{lines: rets}
 }
 
-func (c *MultiLineString) SetSRID(id int) {
+func (c *MultiLine) SetSRID(id int) {
 	c.srid = id
 }
 
-func (ml *MultiLineString) Lines() []geom.LineString {
+func (ml *MultiLine) Lines() []geom.LineString {
 	return ml.lines
 }
 
-func (ml *MultiLineString) Data() [][][]float64 {
+func (ml *MultiLine) Data() [][][]float64 {
 	ret := make([][][]float64, len(ml.lines))
 	for i, p := range ml.lines {
 		ret[i] = p.Data()
@@ -359,40 +363,40 @@ func (ml *MultiLineString) Data() [][][]float64 {
 	return ret
 }
 
-func (p *MultiLineString) GetType() string {
-	return "MultiLineString"
+func (p *MultiLine) GetType() string {
+	return "MultiLine"
 }
 
-func (c *MultiLineString) SRID() int {
+func (c *MultiLine) SRID() int {
 	return c.srid
 }
 
-func (c *MultiLineString) Empty() bool {
+func (c *MultiLine) Empty() bool {
 	return len(c.lines) == 0
 }
 
-type MultiLineString3 struct {
+type MultiLine3 struct {
 	lines []geom.LineString3
 	srid  int
 }
 
-func NewMultiLineString3(pts [][][]float64) *MultiLineString3 {
+func NewMultiLineString3(pts [][][]float64) *MultiLine3 {
 	rets := make([]geom.LineString3, len(pts))
 	for i := range pts {
 		rets[i] = NewLineString3(pts[i])
 	}
-	return &MultiLineString3{lines: rets}
+	return &MultiLine3{lines: rets}
 }
 
-func (c *MultiLineString3) SetSRID(id int) {
+func (c *MultiLine3) SetSRID(id int) {
 	c.srid = id
 }
 
-func (ml *MultiLineString3) Lines() []geom.LineString3 {
+func (ml *MultiLine3) Lines() []geom.LineString3 {
 	return ml.lines
 }
 
-func (ml *MultiLineString3) Data() [][][]float64 {
+func (ml *MultiLine3) Data() [][][]float64 {
 	ret := make([][][]float64, len(ml.lines))
 	for i, p := range ml.lines {
 		ret[i] = p.Data()
@@ -400,15 +404,15 @@ func (ml *MultiLineString3) Data() [][][]float64 {
 	return ret
 }
 
-func (p *MultiLineString3) GetType() string {
-	return "MultiLineString"
+func (p *MultiLine3) GetType() string {
+	return "MultiLine"
 }
 
-func (c *MultiLineString3) SRID() int {
+func (c *MultiLine3) SRID() int {
 	return c.srid
 }
 
-func (c *MultiLineString3) Empty() bool {
+func (c *MultiLine3) Empty() bool {
 	return len(c.lines) == 0
 }
 
@@ -496,4 +500,129 @@ func (c *LineString3) Empty() bool {
 
 func NewGeometryCollection(geoms ...geom.Geometry) geom.Collection {
 	return geoms
+}
+
+func getExtent(g geom.Geometry, e *Extent) error {
+	switch gg := g.(type) {
+
+	default:
+
+		return errors.New("unknow type")
+
+	case geom.Point:
+		e.AddPoints(gg.Data())
+		return nil
+
+	case geom.MultiPoint:
+		e.AddPoints(gg.Data()...)
+		return nil
+
+	case geom.LineString:
+		e.AddPoints(gg.Data()...)
+		return nil
+
+	case geom.MultiLine:
+
+		for _, ls := range gg.Lines() {
+			if err := getExtent(LineString(ls), e); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	case geom.Polygon:
+
+		for _, ls := range gg.Sublines() {
+			if err := getExtent(LineString(ls), e); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	case geom.MultiPolygon:
+
+		for _, p := range gg.Polygons() {
+			if err := getExtent(Polygon(p), e); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	case geom.Collection:
+
+		for _, child := range gg.Geometries() {
+			if err := getExtent(child, e); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	}
+}
+
+func getCoordinates(g geom.Geometry, pts *[]Point) error {
+	switch gg := g.(type) {
+
+	default:
+
+		return errors.New("error type")
+
+	case geom.Point:
+
+		*pts = append(*pts, NewPoint(gg.Data()))
+		return nil
+
+	case geom.MultiPoint:
+
+		mpts := gg.Points()
+		for i := range mpts {
+			*pts = append(*pts, NewPoint(mpts[i]))
+		}
+		return nil
+
+	case geom.LineString:
+
+		mpts := gg.Data()
+		for i := range mpts {
+			*pts = append(*pts, NewPoint(mpts[i]))
+		}
+		return nil
+
+	case geom.MultiLine:
+
+		for _, ls := range gg.Lines() {
+			if err := getCoordinates(LineString(ls), pts); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	case geom.Polygon:
+
+		for _, ls := range gg.Sublines() {
+			if err := getCoordinates(LineString(ls), pts); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	case geom.MultiPolygon:
+
+		for _, p := range gg.Polygons() {
+			if err := getCoordinates(Polygon(p), pts); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	case geom.Collection:
+
+		for _, child := range gg.Geometries() {
+			if err := getCoordinates(child, pts); err != nil {
+				return err
+			}
+		}
+		return nil
+
+	}
 }
