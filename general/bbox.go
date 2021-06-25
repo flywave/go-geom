@@ -43,16 +43,16 @@ func (e *Extent) Verticies() [][2]float64 { return e.Vertices() }
 type ClockwiseFunc func(...[2]float64) bool
 
 // Edges returns the clockwise order of the edges that make up the extent.
-func (e *Extent) Edges(cwfn ClockwiseFunc) [][2][2]float64 {
+func (e *Extent) Edges(cwfn ClockwiseFunc) [][2][]float64 {
 	v := e.Vertices()
 	if cwfn != nil && !cwfn(v...) {
 		v[0], v[1], v[2], v[3] = v[3], v[2], v[1], v[0]
 	}
-	return [][2][2]float64{
-		{v[0], v[1]},
-		{v[1], v[2]},
-		{v[2], v[3]},
-		{v[3], v[0]},
+	return [][2][]float64{
+		{v[0][:], v[1][:]},
+		{v[1][:], v[2][:]},
+		{v[2][:], v[3][:]},
+		{v[3][:], v[0][:]},
 	}
 }
 
@@ -291,7 +291,7 @@ func floatLessOrEqual(pt1, pt2 float64) bool {
 }
 
 // ContainsPoint will return whether the given point is inside of the extent.
-func (e *Extent) ContainsPoint(pt [2]float64) bool {
+func (e *Extent) ContainsPoint(pt []float64) bool {
 	if e == nil {
 		return true
 	}
@@ -302,7 +302,7 @@ func (e *Extent) ContainsPoint(pt [2]float64) bool {
 }
 
 // ContainsLine will return weather the given line completely inside of the extent.
-func (e *Extent) ContainsLine(l [2][2]float64) bool {
+func (e *Extent) ContainsLine(l [2][]float64) bool {
 	if e == nil {
 		return true
 	}
