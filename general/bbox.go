@@ -6,12 +6,10 @@ import (
 	"github.com/flywave/go-geom"
 )
 
-// Extenter represents an interface that returns a boundbox.
 type Extenter interface {
 	Extent() (extent [4]float64)
 }
 
-// MinMaxer is a wrapper for an Extent that gets min/max of the extent
 type MinMaxer interface {
 	MinX() float64
 	MinY() float64
@@ -19,14 +17,8 @@ type MinMaxer interface {
 	MaxY() float64
 }
 
-// Extent represents the minx, miny, maxx and maxy
-// A nil extent represents the whole universe.
 type Extent [4]float64
 
-/* ========================= ATTRIBUTES ========================= */
-
-// Vertices return the vertices of the Bounding Box. The vertices are ordered in the following maner.
-// (minx,miny), (maxx,miny), (maxx,maxy), (minx,maxy)
 func (e *Extent) Vertices() [][2]float64 {
 	return [][2]float64{
 		{e.MinX(), e.MinY()},
@@ -36,13 +28,10 @@ func (e *Extent) Vertices() [][2]float64 {
 	}
 }
 
-// Verticies is the misspelled version of Vertices to match the interface
 func (e *Extent) Verticies() [][2]float64 { return e.Vertices() }
 
-// ClockwiseFunc returns weather the set of points should be considered clockwise or counterclockwise. The last point is not the same as the first point, and the function should connect these points as needed.
 type ClockwiseFunc func(...[2]float64) bool
 
-// Edges returns the clockwise order of the edges that make up the extent.
 func (e *Extent) Edges(cwfn ClockwiseFunc) [][2][]float64 {
 	v := e.Vertices()
 	if cwfn != nil && !cwfn(v...) {
@@ -56,7 +45,6 @@ func (e *Extent) Edges(cwfn ClockwiseFunc) [][2][]float64 {
 	}
 }
 
-// MaxX is the larger of the x values.
 func (e *Extent) MaxX() float64 {
 	if e == nil {
 		return math.MaxFloat64
@@ -64,7 +52,6 @@ func (e *Extent) MaxX() float64 {
 	return e[2]
 }
 
-// MinX  is the smaller of the x values.
 func (e *Extent) MinX() float64 {
 	if e == nil {
 		return -math.MaxFloat64
@@ -72,7 +59,6 @@ func (e *Extent) MinX() float64 {
 	return e[0]
 }
 
-// MaxY is the larger of the y values.
 func (e *Extent) MaxY() float64 {
 	if e == nil {
 		return math.MaxFloat64
@@ -80,7 +66,6 @@ func (e *Extent) MaxY() float64 {
 	return e[3]
 }
 
-// MinY is the smaller of the y values.
 func (e *Extent) MinY() float64 {
 	if e == nil {
 		return -math.MaxFloat64
@@ -88,18 +73,14 @@ func (e *Extent) MinY() float64 {
 	return e[1]
 }
 
-// Min returns the (MinX, MinY) values
 func (e *Extent) Min() [2]float64 {
 	return [2]float64{e[0], e[1]}
 }
 
-// Max returns the (MaxX, MaxY) values
 func (e *Extent) Max() [2]float64 {
 	return [2]float64{e[2], e[3]}
 }
 
-// XSpan is the distance of the Extent in X or inf
-// TODO (gdey): look at how to have this function take into account the dpi.
 func (e *Extent) XSpan() float64 {
 	if e == nil {
 		return math.Inf(1)
@@ -107,7 +88,6 @@ func (e *Extent) XSpan() float64 {
 	return e[2] - e[0]
 }
 
-// YSpan is the distance of the Extent in Y or Inf
 func (e *Extent) YSpan() float64 {
 	if e == nil {
 		return math.Inf(1)
@@ -115,14 +95,10 @@ func (e *Extent) YSpan() float64 {
 	return e[3] - e[1]
 }
 
-// Extent returns back the min and max of the Extent
 func (e *Extent) Extent() [4]float64 {
 	return [4]float64{e.MinX(), e.MinY(), e.MaxX(), e.MaxY()}
 }
 
-/* ========================= EXPANDING BOUNDING BOX ========================= */
-
-// Add will expand the extent to contain the given extent.
 func (e *Extent) Add(extent MinMaxer) {
 	if e == nil {
 		return
@@ -133,9 +109,7 @@ func (e *Extent) Add(extent MinMaxer) {
 	e[3] = math.Max(e[3], extent.MaxY())
 }
 
-// AddPoints will expand the extent to contain the given points.
 func (e *Extent) AddPoints(points ...[]float64) {
-	// A nil extent is all encompassing.
 	if e == nil {
 		return
 	}
@@ -153,27 +127,20 @@ func (e *Extent) AddPoints(points ...[]float64) {
 	}
 }
 
-// AddPointers will expand the Extent if a point is outside it
 func (e *Extent) AddPointers(pts ...geom.Point) {
 	for i := range pts {
 		e.AddPoints(pts[i].Data())
 	}
 }
 
-// AddGeometry expands the specified envelop to contain g.
 func (e *Extent) AddGeometry(g geom.Geometry) error {
 	return getExtent(g, e)
 }
 
-// AsPolygon will return the extent as a Polygon
-// func (e *Extent) AsPolygon() Polygon { return Polygon{e.Vertices()} }
-
-// Area returns the area of the extent, if the extent is nil, it will return 0
 func (e *Extent) Area() float64 {
 	return math.Abs((e.MaxY() - e.MinY()) * (e.MaxX() - e.MinX()))
 }
 
-// NewExtent returns an Extent for the provided points; in following format [4]float64{ MinX, MinY, MaxX, MaxY }
 func NewExtent(points ...[]float64) *Extent {
 	var xy []float64
 	if len(points) == 0 {
@@ -186,14 +153,12 @@ func NewExtent(points ...[]float64) *Extent {
 	}
 	for i := 1; i < len(points); i++ {
 		xy = points[i]
-		// Check the x coords
 		switch {
 		case xy[0] < extent[0]:
 			extent[0] = xy[0]
 		case xy[0] > extent[2]:
 			extent[2] = xy[0]
 		}
-		// Check the y coords
 		switch {
 		case xy[1] < extent[1]:
 			extent[1] = xy[1]
@@ -204,7 +169,6 @@ func NewExtent(points ...[]float64) *Extent {
 	return &extent
 }
 
-// NewExtentFromPoints returns an Extent for the provided points; in following format [4]float64{ MinX, MinY, MaxX, MaxY }
 func NewExtentFromPoints(points ...Point) *Extent {
 	if len(points) == 0 {
 		return nil
@@ -215,14 +179,12 @@ func NewExtentFromPoints(points ...Point) *Extent {
 		return &extent
 	}
 	for _, pt := range points[1:] {
-		// Check the x coords
 		switch {
 		case pt.X() < extent[0]:
 			extent[0] = pt.X()
 		case pt.X() > extent[2]:
 			extent[2] = pt.X()
 		}
-		// Check the y coords
 		switch {
 		case pt.Y() < extent[1]:
 			extent[1] = pt.Y()
@@ -233,7 +195,6 @@ func NewExtentFromPoints(points ...Point) *Extent {
 	return &extent
 }
 
-// NewExtentFromGeometry tries to create an extent based on the geometry
 func NewExtentFromGeometry(g geom.Geometry) (*Extent, error) {
 	var pts []geom.Point
 	if err := getCoordinates(g, &pts); err != nil {
@@ -250,9 +211,7 @@ func NewExtentFromGeometry(g geom.Geometry) (*Extent, error) {
 	return &e, nil
 }
 
-// Contains will return whether the given  extent is inside of the  extent.
 func (e *Extent) Contains(ne MinMaxer) bool {
-	// Nil extent contains the world.
 	if e == nil {
 		return true
 	}
@@ -265,7 +224,6 @@ func (e *Extent) Contains(ne MinMaxer) bool {
 		e.MaxY() >= ne.MaxY()
 }
 
-// Float64 compares two floats to see if they are within the given tolerance.
 func cmpFloat64(f1, f2, tolerance float64) bool {
 	if math.IsInf(f1, 1) {
 		return math.IsInf(f2, 1)
@@ -290,7 +248,6 @@ func floatLessOrEqual(pt1, pt2 float64) bool {
 	return pt1 < pt2
 }
 
-// ContainsPoint will return whether the given point is inside of the extent.
 func (e *Extent) ContainsPoint(pt []float64) bool {
 	if e == nil {
 		return true
@@ -301,7 +258,6 @@ func (e *Extent) ContainsPoint(pt []float64) bool {
 
 }
 
-// ContainsLine will return weather the given line completely inside of the extent.
 func (e *Extent) ContainsLine(l [2][]float64) bool {
 	if e == nil {
 		return true
@@ -309,16 +265,13 @@ func (e *Extent) ContainsLine(l [2][]float64) bool {
 	return e.ContainsPoint(l[0]) && e.ContainsPoint(l[1])
 }
 
-// ContainsGeom will return weather the given geometry is completely inside of the extent.
 func (e *Extent) ContainsGeom(g geom.Geometry) (bool, error) {
 	if e.IsUniverse() {
 		return true, nil
 	}
-	// Check to see if it can be a MinMaxer, if so use that.
 	if extenter, ok := g.(MinMaxer); ok {
 		return e.Contains(extenter), nil
 	}
-	// we will use a exntent that contains the geometry, and check to see if this extent contains that extent.
 	var ne = new(Extent)
 	if err := ne.AddGeometry(g); err != nil {
 		return false, err
@@ -326,7 +279,6 @@ func (e *Extent) ContainsGeom(g geom.Geometry) (bool, error) {
 	return e.Contains(ne), nil
 }
 
-// ScaleBy will scale the points in the extent by the given scale factor.
 func (e *Extent) ScaleBy(s float64) *Extent {
 	if e == nil {
 		return nil
@@ -337,7 +289,6 @@ func (e *Extent) ScaleBy(s float64) *Extent {
 	)
 }
 
-// ExpandBy will expand extent by the given factor.
 func (e *Extent) ExpandBy(s float64) *Extent {
 	if e == nil {
 		return nil
@@ -348,7 +299,6 @@ func (e *Extent) ExpandBy(s float64) *Extent {
 	)
 }
 
-// Clone returns a new Extent with contents copied.
 func (e *Extent) Clone() *Extent {
 	if e == nil {
 		return nil
@@ -356,26 +306,10 @@ func (e *Extent) Clone() *Extent {
 	return &Extent{e[0], e[1], e[2], e[3]}
 }
 
-// Intersect will return a new extent that is the intersect of the two extents.
-//
-//	+-------------------------+
-//	|                         |
-//	|       A      +----------+------+
-//	|              |//////////|      |
-//	|              |/// C ////|      |
-//	|              |//////////|      |
-//	+--------------+----------+      |
-//	               |             B   |
-//	               +-----------------+
-// For example the for the above Box A intersects Box B at the area surround by C.
-//
-// If the Boxes don't intersect does will be false, otherwise ibb will be the intersect.
 func (e *Extent) Intersect(ne *Extent) (*Extent, bool) {
-	// if e in nil, then the intersect is ne. As a nil extent is the whole universe.
 	if e == nil {
 		return ne.Clone(), true
 	}
-	// if ne is nil, then the intersect is e. As a nil extent is the whole universe.
 	if ne == nil {
 		return e.Clone(), true
 	}
@@ -388,7 +322,6 @@ func (e *Extent) Intersect(ne *Extent) (*Extent, bool) {
 	if maxx > ne.MaxX() {
 		maxx = ne.MaxX()
 	}
-	// The boxes don't intersect.
 	if minx >= maxx {
 		return nil, false
 	}
@@ -401,14 +334,12 @@ func (e *Extent) Intersect(ne *Extent) (*Extent, bool) {
 		maxy = ne.MaxY()
 	}
 
-	// The boxes don't intersect.
 	if miny >= maxy {
 		return nil, false
 	}
 	return &Extent{minx, miny, maxx, maxy}, true
 }
 
-// IsUniverse returns weather the extent contains the universe. This is true if the clip box is nil or the x,y values are max values.
 func (e *Extent) IsUniverse() bool {
 	return e == nil || (e.MinX() == -math.MaxFloat64 && e.MaxX() == math.MaxFloat64 &&
 		e.MinY() == -math.MaxFloat64 && e.MaxY() == math.MaxFloat64)

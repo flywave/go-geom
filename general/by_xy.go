@@ -14,14 +14,9 @@ func (xy PointByXY) Less(i, j int) bool {
 func (xy PointByXY) Swap(i, j int) { xy[i], xy[j] = xy[j], xy[i] }
 func (xy PointByXY) Len() int      { return len(xy) }
 
-// bySizeXY is for sorting polygons. There are a few things we need to take
-// in to consideration when sorting polygons.
-// 1. The size of the ring.
-// 2. If the size is the same, then we need to RotateToLeftMostPoint, and then compare the 1st point in the line string.
 type bySubRingSizeXY [][][]float64
 
 func (xy bySubRingSizeXY) Less(i, j int) bool {
-	// The first ring is special. It should always be the first ring.
 	switch {
 	case i == 0:
 		return true
@@ -30,7 +25,6 @@ func (xy bySubRingSizeXY) Less(i, j int) bool {
 	case len(xy[i]) != len(xy[j]):
 		return len(xy[i]) < len(xy[j])
 	default:
-		// if they are the same length we need to use the min point to determine which goes where.
 		mi, mj := FindMinPointIdx(xy[i]), FindMinPointIdx(xy[j])
 		return XYLessPoint(xy[i][mi], xy[j][mj])
 	}

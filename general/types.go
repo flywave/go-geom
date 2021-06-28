@@ -639,25 +639,25 @@ func UnmarshalFeature(data []byte) (*geom.Feature, error) {
 }
 
 func GeometryDataAsGeometry(g *geom.GeometryData) geom.Geometry {
-	var geom geom.Geometry
+	var geom_ geom.Geometry
 	if g.IsPoint() {
-		geom = NewPoint(g.Point)
+		geom_ = NewPoint(g.Point)
 	} else if g.IsMultiPoint() {
-		geom = NewMultiPoint(g.MultiPoint)
+		geom_ = NewMultiPoint(g.MultiPoint)
 	} else if g.IsLineString() {
-		geom = NewLineString(g.LineString)
+		geom_ = NewLineString(g.LineString)
 	} else if g.IsMultiLineString() {
-		geom = NewMultiLineString(g.MultiLineString)
+		geom_ = NewMultiLineString(g.MultiLineString)
 	} else if g.IsPolygon() {
-		geom = NewPolygon(g.Polygon)
+		geom_ = NewPolygon(g.Polygon)
 	} else if g.IsMultiPolygon() {
-		geom = NewMultiPolygon(g.MultiPolygon)
+		geom_ = NewMultiPolygon(g.MultiPolygon)
 	} else if g.IsCollection() {
 		cols := make(geom.Collection, len(g.Geometries))
 		for i := range g.Geometries {
 			cols[i] = GeometryDataAsGeometry(g.Geometries[i])
 		}
-		geom = cols
+		geom_ = cols
 	}
-	return geom
+	return geom_
 }
