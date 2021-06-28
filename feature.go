@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-
-	gen "github.com/flywave/go-geom/general"
 )
 
 type Feature struct {
@@ -92,40 +90,6 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(fea)
-}
-
-func UnmarshalFeature(data []byte) (*Feature, error) {
-	f := &Feature{}
-	err := json.Unmarshal(data, f)
-	if err != nil {
-		return nil, err
-	}
-	f.Geometry = GeometryDataAsGeometry(&f.GeometryData)
-	return f, nil
-}
-
-func GeometryDataAsGeometry(g *GeometryData) Geometry {
-	var geom Geometry
-	if g.IsPoint() {
-		geom = gen.NewPoint(g.Point)
-	} else if g.IsMultiPoint() {
-		geom = gen.NewMultiPoint(g.MultiPoint)
-	} else if g.IsLineString() {
-		geom = gen.NewLineString(g.LineString)
-	} else if g.IsMultiLineString() {
-		geom = gen.NewMultiLineString(g.MultiLineString)
-	} else if g.IsPolygon() {
-		geom = gen.NewPolygon(g.Polygon)
-	} else if g.IsMultiPolygon() {
-		geom = gen.NewMultiPolygon(g.MultiPolygon)
-	} else if g.IsCollection() {
-		cols := make(Collection, len(g.Geometries))
-		for i := range g.Geometries {
-			cols[i] = GeometryDataAsGeometry(g.Geometries[i])
-		}
-		geom = cols
-	}
-	return geom
 }
 
 func (f *Feature) SetProperty(key string, value interface{}) {

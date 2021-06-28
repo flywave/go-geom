@@ -1,9 +1,10 @@
 package general
 
 import (
+	"encoding/json"
 	"errors"
 
-	"github.com/flywave/go-geom"
+	geom "github.com/flywave/go-geom"
 )
 
 type Coordinate []float64
@@ -625,4 +626,38 @@ func getCoordinates(g geom.Geometry, pts *[]geom.Point) error {
 		return nil
 
 	}
+}
+
+func UnmarshalFeature(data []byte) (*geom.Feature, error) {
+	f := &geom.Feature{}
+	err := json.Unmarshal(data, f)
+	if err != nil {
+		return nil, err
+	}
+	f.Geometry = GeometryDataAsGeometry(&f.GeometryData)
+	return f, nil
+}
+
+func GeometryDataAsGeometry(g *geom.GeometryData) geom.Geometry {
+	var geom geom.Geometry
+	if g.IsPoint() {
+		geom = NewPoint(g.Point)
+	} else if g.IsMultiPoint() {
+		geom = NewMultiPoint(g.MultiPoint)
+	} else if g.IsLineString() {
+		geom = NewLineString(g.LineString)
+	} else if g.IsMultiLineString() {
+		geom = NewMultiLineString(g.MultiLineString)
+	} else if g.IsPolygon() {
+		geom = NewPolygon(g.Polygon)
+	} else if g.IsMultiPolygon() {
+		geom = NewMultiPolygon(g.MultiPolygon)
+	} else if g.IsCollection() {
+		cols := make(geom.Collection, len(g.Geometries))
+		for i := range g.Geometries {
+			cols[i] = GeometryDataAsGeometry(g.Geometries[i])
+		}
+		geom = cols
+	}
+	return geom
 }
