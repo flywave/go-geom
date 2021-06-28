@@ -100,7 +100,7 @@ func UnmarshalFeature(data []byte) (*Feature, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	f.Geometry = GeometryDataAsGeometry(&f.GeometryData)
 	return f, nil
 }
 
