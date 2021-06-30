@@ -324,7 +324,7 @@ func (mp *MultiPoint3) Data() [][]float64 {
 }
 
 func (p *MultiPoint3) GetType() string {
-	return "MultiPoint3"
+	return "MultiPoint"
 }
 
 func (c MultiPoint3) SRID() int {
@@ -365,7 +365,7 @@ func (ml *MultiLine) Data() [][][]float64 {
 }
 
 func (p *MultiLine) GetType() string {
-	return "MultiLine"
+	return "MultiLineString"
 }
 
 func (c *MultiLine) SRID() int {
@@ -406,7 +406,7 @@ func (ml *MultiLine3) Data() [][][]float64 {
 }
 
 func (p *MultiLine3) GetType() string {
-	return "MultiLine"
+	return "MultiLineString"
 }
 
 func (c *MultiLine3) SRID() int {
