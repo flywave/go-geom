@@ -661,3 +661,15 @@ func GeometryDataAsGeometry(g *geom.GeometryData) geom.Geometry {
 	}
 	return gm
 }
+
+func UnmarshalFeatureCollection(data []byte) (*geom.FeatureCollection, error) {
+	fc := &geom.FeatureCollection{}
+	err := json.Unmarshal(data, fc)
+	if err != nil {
+		return nil, err
+	}
+	for _, f := range fc.Features {
+		f.Geometry = GeometryDataAsGeometry(&f.GeometryData)
+	}
+	return fc, nil
+}

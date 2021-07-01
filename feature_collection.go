@@ -45,13 +45,3 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(fcol)
 }
-
-func UnmarshalFeatureCollection(data []byte) (*FeatureCollection, error) {
-	fc := &FeatureCollection{}
-	err := json.Unmarshal(data, fc)
-	if err != nil {
-		return nil, err
-	}
-
-	return fc, nil
-}
