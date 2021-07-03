@@ -333,21 +333,27 @@ func BoundingBoxFromGeometryCollection(gs []Geometry) BoundingBox {
 func BoundingBoxFromGeometry(g Geometry) BoundingBox {
 	switch t := (g).(type) {
 	case Point:
+		return BoundingBoxFromPointGeometry(t.Data())
 	case Point3:
 		return BoundingBoxFromPointGeometry(t.Data())
 	case MultiPoint:
+		return BoundingBoxFromMultiPointGeometry(t.Data())
 	case MultiPoint3:
 		return BoundingBoxFromMultiPointGeometry(t.Data())
 	case LineString:
+		return BoundingBoxFromLineStringGeometry(t.Data())
 	case LineString3:
 		return BoundingBoxFromLineStringGeometry(t.Data())
 	case MultiLine:
+		return BoundingBoxFromMultiLineStringGeometry(t.Data())
 	case MultiLine3:
 		return BoundingBoxFromMultiLineStringGeometry(t.Data())
 	case Polygon:
+		return BoundingBoxFromPolygonGeometry(t.Data())
 	case Polygon3:
 		return BoundingBoxFromPolygonGeometry(t.Data())
 	case MultiPolygon:
+		return BoundingBoxFromMultiPolygonGeometry(t.Data())
 	case MultiPolygon3:
 		return BoundingBoxFromMultiPolygonGeometry(t.Data())
 	}

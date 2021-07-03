@@ -466,21 +466,27 @@ func IsCollectionEqual(c1, c2 Collection) bool {
 func IsGeometryEmpty(geom Geometry) bool {
 	switch t := geom.(type) {
 	case Point:
+		return len(t.Data()) == 0
 	case Point3:
 		return len(t.Data()) == 0
 	case MultiPoint:
+		return len(t.Data()) == 0
 	case MultiPoint3:
 		return len(t.Data()) == 0
 	case LineString:
+		return len(t.Data()) == 0
 	case LineString3:
 		return len(t.Data()) == 0
 	case MultiLine:
+		return len(t.Data()) == 0
 	case MultiLine3:
 		return len(t.Data()) == 0
 	case Polygon:
+		return len(t.Data()) == 0
 	case Polygon3:
 		return len(t.Data()) == 0
 	case MultiPolygon:
+		return len(t.Data()) == 0
 	case MultiPolygon3:
 		return len(t.Data()) == 0
 	}
