@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+const (
+	EXT_TOPO = "TOPO"
+)
+
 type Feature struct {
 	ID           interface{}            `json:"id,omitempty"`
 	Type         string                 `json:"type"`
@@ -15,7 +19,7 @@ type Feature struct {
 	Properties   map[string]interface{} `json:"properties"`
 	CRS          map[string]interface{} `json:"crs,omitempty"`
 	GeometryData GeometryData           `json:"geometry"`
-	UserData     interface{}            `json:"data,omitempty"`
+	ExtData      map[string]interface{} `json:"ext-data,omitempty"`
 }
 
 func NewFeature(geometry Geometry) *Feature {
