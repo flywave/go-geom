@@ -15,6 +15,7 @@ type Feature struct {
 	Properties   map[string]interface{} `json:"properties"`
 	CRS          map[string]interface{} `json:"crs,omitempty"`
 	GeometryData GeometryData           `json:"geometry"`
+	UserData     interface{}            `json:"data,omitempty"`
 }
 
 func NewFeature(geometry Geometry) *Feature {
