@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+const (
+	EXT_TOPO = "TOPO"
+)
+
 type Feature struct {
 	ID           interface{}            `json:"id,omitempty"`
 	Type         string                 `json:"type"`
@@ -15,6 +19,7 @@ type Feature struct {
 	Properties   map[string]interface{} `json:"properties"`
 	CRS          map[string]interface{} `json:"crs,omitempty"`
 	GeometryData GeometryData           `json:"geometry"`
+	ExtData      map[string]interface{} `json:"ext-data,omitempty"`
 }
 
 func NewFeature(geometry Geometry) *Feature {
@@ -333,21 +338,27 @@ func BoundingBoxFromGeometryCollection(gs []Geometry) BoundingBox {
 func BoundingBoxFromGeometry(g Geometry) BoundingBox {
 	switch t := (g).(type) {
 	case Point:
+		return BoundingBoxFromPointGeometry(t.Data())
 	case Point3:
 		return BoundingBoxFromPointGeometry(t.Data())
 	case MultiPoint:
+		return BoundingBoxFromMultiPointGeometry(t.Data())
 	case MultiPoint3:
 		return BoundingBoxFromMultiPointGeometry(t.Data())
 	case LineString:
+		return BoundingBoxFromLineStringGeometry(t.Data())
 	case LineString3:
 		return BoundingBoxFromLineStringGeometry(t.Data())
 	case MultiLine:
+		return BoundingBoxFromMultiLineStringGeometry(t.Data())
 	case MultiLine3:
 		return BoundingBoxFromMultiLineStringGeometry(t.Data())
 	case Polygon:
+		return BoundingBoxFromPolygonGeometry(t.Data())
 	case Polygon3:
 		return BoundingBoxFromPolygonGeometry(t.Data())
 	case MultiPolygon:
+		return BoundingBoxFromMultiPolygonGeometry(t.Data())
 	case MultiPolygon3:
 		return BoundingBoxFromMultiPolygonGeometry(t.Data())
 	}

@@ -36,36 +36,60 @@ func NewGeometryData(geometry Geometry) *GeometryData {
 	default:
 		return nil
 	case Point:
+		var ret GeometryData
+		ret.Type = GeometryPoint
+		ret.Point = geo.Data()
+		return &ret
 	case Point3:
 		var ret GeometryData
 		ret.Type = GeometryPoint
 		ret.Point = geo.Data()
 		return &ret
 	case MultiPoint:
+		var ret GeometryData
+		ret.Type = GeometryMultiPoint
+		ret.MultiPoint = geo.Data()
+		return &ret
 	case MultiPoint3:
 		var ret GeometryData
 		ret.Type = GeometryMultiPoint
 		ret.MultiPoint = geo.Data()
 		return &ret
 	case LineString:
+		var ret GeometryData
+		ret.Type = GeometryLineString
+		ret.LineString = geo.Data()
+		return &ret
 	case LineString3:
 		var ret GeometryData
 		ret.Type = GeometryLineString
 		ret.LineString = geo.Data()
 		return &ret
 	case MultiLine:
+		var ret GeometryData
+		ret.Type = GeometryMultiLineString
+		ret.MultiLineString = geo.Data()
+		return &ret
 	case MultiLine3:
 		var ret GeometryData
 		ret.Type = GeometryMultiLineString
 		ret.MultiLineString = geo.Data()
 		return &ret
 	case Polygon:
+		var ret GeometryData
+		ret.Type = GeometryPolygon
+		ret.Polygon = geo.Data()
+		return &ret
 	case Polygon3:
 		var ret GeometryData
 		ret.Type = GeometryPolygon
 		ret.Polygon = geo.Data()
 		return &ret
 	case MultiPolygon:
+		var ret GeometryData
+		ret.Type = GeometryMultiPolygon
+		ret.MultiPolygon = geo.Data()
+		return &ret
 	case MultiPolygon3:
 		var ret GeometryData
 		ret.Type = GeometryMultiPolygon
@@ -80,7 +104,6 @@ func NewGeometryData(geometry Geometry) *GeometryData {
 		}
 		return &ret
 	}
-	return nil
 }
 
 func NewPointGeometryData(coordinate []float64) *GeometryData {
