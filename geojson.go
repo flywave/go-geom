@@ -371,6 +371,10 @@ func decodeGeometries(data interface{}) ([]*GeometryData, error) {
 	return nil, fmt.Errorf("not a valid set of geometries, got %v", data)
 }
 
+func (g *GeometryData) IsEmpty() bool {
+	return g.Type == ""
+}
+
 func (g *GeometryData) IsPoint() bool {
 	return g.Type == GeometryPoint
 }
