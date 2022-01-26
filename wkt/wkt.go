@@ -35,7 +35,7 @@ func dumpPoint(buffer *bytes.Buffer, coordinate []float64) int {
 		dim = 2
 	}
 	for i := range coordinate {
-		buffer.WriteString(strconv.FormatFloat(coordinate[i], 'f', -1, 32))
+		buffer.WriteString(strconv.FormatFloat(coordinate[i], 'f', -1, 64))
 		if i < len(coordinate)-1 {
 			buffer.WriteString(" ")
 		} else {
@@ -57,7 +57,7 @@ func dumpMultiPoint(buffer *bytes.Buffer, coordinates ...[]float64) int {
 
 	for i := range coordinates {
 		for j := range coordinates[i] {
-			buffer.WriteString(strconv.FormatFloat(coordinates[i][j], 'f', -1, 32))
+			buffer.WriteString(strconv.FormatFloat(coordinates[i][j], 'f', -1, 64))
 			if j < len(coordinates[i])-1 {
 				buffer.WriteString(" ")
 			}
@@ -82,7 +82,7 @@ func dumpLineString(buffer *bytes.Buffer, coordinates [][]float64) int {
 
 	for i := range coordinates {
 		for j := range coordinates[i] {
-			buffer.WriteString(strconv.FormatFloat(coordinates[i][j], 'f', -1, 32))
+			buffer.WriteString(strconv.FormatFloat(coordinates[i][j], 'f', -1, 64))
 			if j < len(coordinates[i])-1 {
 				buffer.WriteString(" ")
 			}
@@ -109,7 +109,7 @@ func dumpMultiLineString(buffer *bytes.Buffer, lines ...[][]float64) int {
 		buffer.WriteString("(")
 		for j := range lines[i] {
 			for k := range lines[i][j] {
-				buffer.WriteString(strconv.FormatFloat(lines[i][j][k], 'f', -1, 32))
+				buffer.WriteString(strconv.FormatFloat(lines[i][j][k], 'f', -1, 64))
 				if k < len(lines[i][j])-1 {
 					buffer.WriteString(" ")
 				}
@@ -141,7 +141,7 @@ func dumpPolygon(buffer *bytes.Buffer, polygon [][][]float64) int {
 		buffer.WriteString("(")
 		for j := range polygon[i] {
 			for k := range polygon[i][j] {
-				buffer.WriteString(strconv.FormatFloat(polygon[i][j][k], 'f', -1, 32))
+				buffer.WriteString(strconv.FormatFloat(polygon[i][j][k], 'f', -1, 64))
 				if k < len(polygon[i][j])-1 {
 					buffer.WriteString(" ")
 				}
@@ -175,7 +175,7 @@ func dumpMultiPolygon(buffer *bytes.Buffer, polygons ...[][][]float64) int {
 			buffer.WriteString("(")
 			for j := range polygons[o][i] {
 				for k := range polygons[o][i][j] {
-					buffer.WriteString(strconv.FormatFloat(polygons[o][i][j][k], 'f', -1, 32))
+					buffer.WriteString(strconv.FormatFloat(polygons[o][i][j][k], 'f', -1, 64))
 					if k < len(polygons[o][i][j])-1 {
 						buffer.WriteString(" ")
 					}
