@@ -226,7 +226,7 @@ func decodeBoundingBox(bb interface{}) ([]float64, error) {
 // BoundingBox syntax: "bbox": [west, south, east, north]
 // BoundingBox defaults "bbox": [-180.0, -90.0, 180.0, 90.0]
 func BoundingBoxFromPoints(pts [][]float64) BoundingBox {
-	west, south, east, north := -180.0, -90.0, 180.0, 90.0
+	west, south, east, north := 180.0, 90.0, -180.0, -90.0
 
 	for _, pt := range pts {
 		if pt == nil {
@@ -235,13 +235,15 @@ func BoundingBoxFromPoints(pts [][]float64) BoundingBox {
 		x, y := pt[0], pt[1]
 		if x < west {
 			west = x
-		} else if x > east {
+		}
+		if x > east {
 			east = x
 		}
 
 		if y < south {
 			south = y
-		} else if y > north {
+		}
+		if y > north {
 			north = y
 		}
 	}
@@ -249,7 +251,7 @@ func BoundingBoxFromPoints(pts [][]float64) BoundingBox {
 }
 
 func BoundingBoxsFromTwoBBox(bb1 BoundingBox, bb2 BoundingBox) BoundingBox {
-	west, south, east, north := -180.0, -90.0, 180.0, 90.0
+	west, south, east, north := 180.0, 90.0, -180.0, -90.0
 
 	west1, south1, east1, north1 := bb1[0], bb1[1], bb1[2], bb1[3]
 	west2, south2, east2, north2 := bb2[0], bb2[1], bb2[2], bb2[3]
