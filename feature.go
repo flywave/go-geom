@@ -15,7 +15,7 @@ type Feature struct {
 	ID           interface{}            `json:"id,omitempty"`
 	Type         string                 `json:"type"`
 	BoundingBox  BoundingBox            `json:"bbox,omitempty"`
-	Geometry     Geometry               `json:"_"`
+	Geometry     Geometry               `json:"-"`
 	Properties   map[string]interface{} `json:"properties"`
 	CRS          map[string]interface{} `json:"crs,omitempty"`
 	GeometryData GeometryData           `json:"geometry"`
