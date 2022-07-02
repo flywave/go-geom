@@ -82,6 +82,7 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 		ID:           f.ID,
 		Type:         "Feature",
 		GeometryData: data,
+		ExtData:      f.ExtData,
 	}
 
 	if f.BoundingBox != nil && len(f.BoundingBox) != 0 {
