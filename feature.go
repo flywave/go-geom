@@ -15,7 +15,7 @@ type Feature struct {
 	ID           interface{}            `json:"id,omitempty"`
 	Type         string                 `json:"type"`
 	BoundingBox  BoundingBox            `json:"bbox,omitempty"`
-	Geometry     Geometry               `json:"_"`
+	Geometry     Geometry               `json:"-"`
 	Properties   map[string]interface{} `json:"properties"`
 	CRS          map[string]interface{} `json:"crs,omitempty"`
 	GeometryData GeometryData           `json:"geometry"`
@@ -236,13 +236,15 @@ func BoundingBoxFromPoints(pts [][]float64) BoundingBox {
 		x, y := pt[0], pt[1]
 		if x < west {
 			west = x
-		} else if x > east {
+		}
+		if x > east {
 			east = x
 		}
 
 		if y < south {
 			south = y
-		} else if y > north {
+		}
+		if y > north {
 			north = y
 		}
 	}
