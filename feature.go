@@ -28,6 +28,7 @@ func NewFeature(geometry Geometry) *Feature {
 		Geometry:    geometry,
 		BoundingBox: BoundingBoxFromGeometry(geometry),
 		Properties:  make(map[string]interface{}),
+		ExtData:     make(map[string]interface{}),
 	}
 }
 
@@ -37,6 +38,7 @@ func NewFeatureFromGeometryData(geometry *GeometryData) *Feature {
 		GeometryData: *geometry,
 		BoundingBox:  BoundingBoxFromGeometryData(geometry),
 		Properties:   make(map[string]interface{}),
+		ExtData:      make(map[string]interface{}),
 	}
 }
 
