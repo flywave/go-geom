@@ -42,7 +42,7 @@ func ConvertToGeom(g *geom_.GeometryData, srsid *uint32) (geom.Geometry, geom.Di
 			mp = geom.MultiPoint{Hdr: geom.Hdr{Dim: geom.XY, Srid: sid}}
 		}
 		for i := range g.MultiPoint {
-			mp.Points = append(mp.Points, geom.Point{Hdr: geom.Hdr{Dim: geom.XY, Srid: sid}, Coordinate: g.MultiPoint[i]})
+			mp.Points = append(mp.Points, geom.Point{Hdr: geom.Hdr{Dim: dim, Srid: sid}, Coordinate: g.MultiPoint[i]})
 		}
 		geo = &mp
 	case "LineString":
