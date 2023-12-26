@@ -6,7 +6,7 @@ import (
 
 type FeatureCollection struct {
 	Type        string                 `json:"type"`
-	BoundingBox BoundingBox            `json:"bbox,omitempty"`
+	BoundingBox *BoundingBox           `json:"bbox,omitempty"`
 	Features    []*Feature             `json:"features"`
 	CRS         map[string]interface{} `json:"crs,omitempty"`
 }

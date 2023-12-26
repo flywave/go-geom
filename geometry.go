@@ -7,7 +7,29 @@ import (
 	"math"
 )
 
-type BoundingBox []float64
+type BoundingBox [2][3]float64
+
+func (b *BoundingBox) UnmarshalJSON(data []byte) error {
+	var t []float64
+	err := json.Unmarshal(data, &t)
+	if err == nil {
+		if len(t) == 4 {
+			b[0] = [3]float64{t[0], t[1], 0}
+			b[1] = [3]float64{t[2], t[3], 0}
+		} else if len(t) == 6 {
+			b[0] = [3]float64{t[0], t[1], t[2]}
+			b[1] = [3]float64{t[2], t[3], t[5]}
+		}
+		return nil
+	}
+	bd := [2][3]float64{}
+	err = json.Unmarshal(data, &bd)
+	if err == nil {
+		b[0] = bd[0]
+		b[1] = bd[1]
+	}
+	return err
+}
 
 type Geometry interface {
 	GetType() string

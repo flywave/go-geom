@@ -15,7 +15,7 @@ const (
 type Feature struct {
 	ID           interface{}            `json:"id,omitempty"`
 	Type         string                 `json:"type"`
-	BoundingBox  BoundingBox            `json:"bbox,omitempty"`
+	BoundingBox  *BoundingBox           `json:"bbox,omitempty"`
 	Geometry     Geometry               `json:"-"`
 	Properties   map[string]interface{} `json:"properties"`
 	CRS          map[string]interface{} `json:"crs,omitempty"`
@@ -229,14 +229,18 @@ func decodeBoundingBox(bb interface{}) ([]float64, error) {
 // BoundingBox implementation as per https://tools.ietf.org/html/rfc7946
 // BoundingBox syntax: "bbox": [west, south, east, north]
 // BoundingBox defaults "bbox": [-180.0, -90.0, 180.0, 90.0]
-func BoundingBoxFromPoints(pts [][]float64) BoundingBox {
-	west, south, east, north := math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64
+func BoundingBoxFromPoints(pts [][]float64) *BoundingBox {
+	west, south, buttom, east, north, top := math.MaxFloat64, math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64
 
 	for _, pt := range pts {
 		if pt == nil {
 			continue
 		}
-		x, y := pt[0], pt[1]
+		x, y, z := pt[0], pt[1], 0.0
+		if len(pt) > 2 {
+			z = pt[2]
+		}
+
 		if x < west {
 			west = x
 		}
@@ -250,15 +254,22 @@ func BoundingBoxFromPoints(pts [][]float64) BoundingBox {
 		if y > north {
 			north = y
 		}
+		if z < buttom {
+			buttom = z
+		}
+		if z > top {
+			top = z
+		}
 	}
-	return BoundingBox{west, south, east, north}
+	return &BoundingBox{[3]float64{west, south, buttom}, [3]float64{east, north, top}}
 }
 
-func BoundingBoxsFromTwoBBox(bb1 BoundingBox, bb2 BoundingBox) BoundingBox {
-	west, south, east, north := math.MaxFloat64, math.MaxFloat64, -math.MaxFloat64, -math.MaxFloat64
+func BoundingBoxsFromTwoBBox(bb1 *BoundingBox, bb2 *BoundingBox) *BoundingBox {
+	west, south, buttom, east, north, top := 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
-	west1, south1, east1, north1 := bb1[0], bb1[1], bb1[2], bb1[3]
-	west2, south2, east2, north2 := bb2[0], bb2[1], bb2[2], bb2[3]
+	west1, south1, buttom1, east1, north1, top1 := bb1[0][0], bb1[0][1], bb1[0][2], bb1[1][0], bb1[1][1], bb1[1][2]
+
+	west2, south2, buttom2, east2, north2, top2 := bb2[0][0], bb2[0][1], bb2[0][2], bb2[1][0], bb2[1][1], bb2[1][2]
 
 	if west1 < west2 {
 		west = west1
@@ -284,47 +295,70 @@ func BoundingBoxsFromTwoBBox(bb1 BoundingBox, bb2 BoundingBox) BoundingBox {
 		north = north2
 	}
 
-	return BoundingBox{west, south, east, north}
+	if north1 > north2 {
+		north = north1
+	} else {
+		north = north2
+	}
+
+	if top1 > top2 {
+		top = top1
+	} else {
+		top = top2
+	}
+
+	if buttom1 < buttom2 {
+		buttom = buttom1
+	} else {
+		buttom = buttom2
+	}
+
+	return &BoundingBox{[3]float64{west, south, buttom}, [3]float64{east, north, top}}
 }
 
-func ExpandBoundingBoxs(bboxs []BoundingBox) BoundingBox {
-	bbox := bboxs[0]
+func ExpandBoundingBoxs(bboxs []*BoundingBox) *BoundingBox {
+	var bbox *BoundingBox
 	for _, temp_bbox := range bboxs[1:] {
 		bbox = BoundingBoxsFromTwoBBox(bbox, temp_bbox)
 	}
 	return bbox
 }
 
-func BoundingBoxFromPointGeometry(pt []float64) BoundingBox {
-	return BoundingBox{pt[0], pt[1], pt[0], pt[1]}
+func BoundingBoxFromPointGeometry(pt []float64) *BoundingBox {
+	if len(pt) == 2 {
+		return &BoundingBox{{pt[0], pt[1], 0}, {pt[0], pt[1], 0}}
+
+	} else {
+		return &BoundingBox{{pt[0], pt[1], pt[2]}, {pt[0], pt[1], pt[2]}}
+	}
 }
 
-func BoundingBoxFromMultiPointGeometry(pts [][]float64) BoundingBox {
+func BoundingBoxFromMultiPointGeometry(pts [][]float64) *BoundingBox {
 	return BoundingBoxFromPoints(pts)
 }
 
-func BoundingBoxFromLineStringGeometry(line [][]float64) BoundingBox {
+func BoundingBoxFromLineStringGeometry(line [][]float64) *BoundingBox {
 	return BoundingBoxFromPoints(line)
 }
 
-func BoundingBoxFromMultiLineStringGeometry(multiline [][][]float64) BoundingBox {
-	bboxs := []BoundingBox{}
+func BoundingBoxFromMultiLineStringGeometry(multiline [][][]float64) *BoundingBox {
+	bboxs := []*BoundingBox{}
 	for _, line := range multiline {
 		bboxs = append(bboxs, BoundingBoxFromPoints(line))
 	}
 	return ExpandBoundingBoxs(bboxs)
 }
 
-func BoundingBoxFromPolygonGeometry(polygon [][][]float64) BoundingBox {
-	bboxs := []BoundingBox{}
+func BoundingBoxFromPolygonGeometry(polygon [][][]float64) *BoundingBox {
+	bboxs := []*BoundingBox{}
 	for _, cont := range polygon {
 		bboxs = append(bboxs, BoundingBoxFromPoints(cont))
 	}
 	return ExpandBoundingBoxs(bboxs)
 }
 
-func BoundingBoxFromMultiPolygonGeometry(multipolygon [][][][]float64) BoundingBox {
-	bboxs := []BoundingBox{}
+func BoundingBoxFromMultiPolygonGeometry(multipolygon [][][][]float64) *BoundingBox {
+	bboxs := []*BoundingBox{}
 	for _, polygon := range multipolygon {
 		for _, cont := range polygon {
 			bboxs = append(bboxs, BoundingBoxFromPoints(cont))
@@ -333,15 +367,15 @@ func BoundingBoxFromMultiPolygonGeometry(multipolygon [][][][]float64) BoundingB
 	return ExpandBoundingBoxs(bboxs)
 }
 
-func BoundingBoxFromGeometryCollection(gs []Geometry) BoundingBox {
-	bboxs := []BoundingBox{}
+func BoundingBoxFromGeometryCollection(gs []Geometry) *BoundingBox {
+	bboxs := []*BoundingBox{}
 	for _, g := range gs {
 		bboxs = append(bboxs, BoundingBoxFromGeometry(g))
 	}
 	return ExpandBoundingBoxs(bboxs)
 }
 
-func BoundingBoxFromGeometry(g Geometry) BoundingBox {
+func BoundingBoxFromGeometry(g Geometry) *BoundingBox {
 	switch t := (g).(type) {
 	case Point:
 		return BoundingBoxFromPointGeometry(t.Data())
@@ -368,10 +402,10 @@ func BoundingBoxFromGeometry(g Geometry) BoundingBox {
 	case MultiPolygon3:
 		return BoundingBoxFromMultiPolygonGeometry(t.Data())
 	}
-	return []float64{}
+	return nil
 }
 
-func BoundingBoxFromGeometryData(g *GeometryData) BoundingBox {
+func BoundingBoxFromGeometryData(g *GeometryData) *BoundingBox {
 	switch g.Type {
 	case "Point":
 		return BoundingBoxFromPointGeometry(g.Point)
@@ -386,7 +420,70 @@ func BoundingBoxFromGeometryData(g *GeometryData) BoundingBox {
 	case "MultiPolygon":
 		return BoundingBoxFromMultiPolygonGeometry(g.MultiPolygon)
 	}
-	return BoundingBox{}
+	return nil
+}
+
+func ProcessGeometryData(g *GeometryData, fn func([]float64) []float64) *GeometryData {
+	res := *g
+	switch g.Type {
+	case "Point":
+		res.Point = ProcessPointGeometry(g.Point, fn)
+	case "MultiPoint":
+		res.MultiPoint = ProcessMultiPointGeometry(g.MultiPoint, fn)
+	case "LineString":
+		res.LineString = ProcessLineStringGeometry(g.LineString, fn)
+	case "MultiLineString":
+		res.MultiLineString = ProcessMultiLineStringGeometry(g.MultiLineString, fn)
+	case "Polygon":
+		res.Polygon = ProcessPolygonGeometry(g.Polygon, fn)
+	case "MultiPolygon":
+		res.MultiPolygon = ProcessMultiPolygonGeometry(g.MultiPolygon, fn)
+	}
+	return &res
+}
+
+func ProcessPointGeometry(pt []float64, fn func([]float64) []float64) []float64 {
+	return fn(pt)
+}
+
+func ProcessMultiPointGeometry(pts [][]float64, fn func([]float64) []float64) [][]float64 {
+	res := [][]float64{}
+	for _, p := range pts {
+		res = append(res, ProcessPointGeometry(p, fn))
+	}
+	return res
+}
+
+func ProcessLineStringGeometry(line [][]float64, fn func([]float64) []float64) [][]float64 {
+	res := [][]float64{}
+	for _, p := range line {
+		res = append(res, ProcessPointGeometry(p, fn))
+	}
+	return res
+}
+
+func ProcessMultiLineStringGeometry(multiline [][][]float64, fn func([]float64) []float64) [][][]float64 {
+	res := [][][]float64{}
+	for _, p := range multiline {
+		res = append(res, ProcessLineStringGeometry(p, fn))
+	}
+	return res
+}
+
+func ProcessPolygonGeometry(polygon [][][]float64, fn func([]float64) []float64) [][][]float64 {
+	res := [][][]float64{}
+	for _, p := range polygon {
+		res = append(res, ProcessLineStringGeometry(p, fn))
+	}
+	return res
+}
+
+func ProcessMultiPolygonGeometry(multipolygon [][][][]float64, fn func([]float64) []float64) [][][][]float64 {
+	res := [][][][]float64{}
+	for _, p := range multipolygon {
+		res = append(res, ProcessPolygonGeometry(p, fn))
+	}
+	return res
 }
 
 func GetKeyDifs(f1, f2 map[string]interface{}) ([]string, []string) {

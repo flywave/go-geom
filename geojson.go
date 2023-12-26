@@ -20,7 +20,7 @@ const (
 
 type GeometryData struct {
 	Type            GeometryType `json:"type"`
-	BoundingBox     BoundingBox  `json:"bbox,omitempty"`
+	BoundingBox     *BoundingBox `json:"bbox,omitempty"`
 	Point           []float64
 	MultiPoint      [][]float64
 	LineString      [][]float64
@@ -158,7 +158,7 @@ func NewCollectionGeometryData(geometries ...*GeometryData) *GeometryData {
 func (g GeometryData) MarshalJSON() ([]byte, error) {
 	type geometry struct {
 		Type        GeometryType           `json:"type"`
-		BoundingBox []float64              `json:"bbox,omitempty"`
+		BoundingBox *BoundingBox           `json:"bbox,omitempty"`
 		Coordinates interface{}            `json:"coordinates,omitempty"`
 		Geometries  interface{}            `json:"geometries,omitempty"`
 		CRS         map[string]interface{} `json:"crs,omitempty"`
