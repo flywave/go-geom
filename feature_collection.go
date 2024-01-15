@@ -9,12 +9,14 @@ type FeatureCollection struct {
 	BoundingBox *BoundingBox           `json:"bbox,omitempty"`
 	Features    []*Feature             `json:"features"`
 	CRS         map[string]interface{} `json:"crs,omitempty"`
+	Properties  map[string]interface{} `json:"properties,omitempty"`
 }
 
 func NewFeatureCollection() *FeatureCollection {
 	return &FeatureCollection{
-		Type:     "FeatureCollection",
-		Features: make([]*Feature, 0),
+		Type:       "FeatureCollection",
+		Features:   make([]*Feature, 0),
+		Properties: make(map[string]interface{}),
 	}
 }
 
@@ -41,6 +43,10 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 
 	if fc.CRS != nil && len(fc.CRS) != 0 {
 		fcol.CRS = fc.CRS
+	}
+
+	if fc.Properties != nil && len(fc.Properties) != 0 {
+		fcol.Properties = fc.Properties
 	}
 
 	return json.Marshal(fcol)

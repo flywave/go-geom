@@ -318,6 +318,9 @@ func BoundingBoxsFromTwoBBox(bb1 *BoundingBox, bb2 *BoundingBox) *BoundingBox {
 
 func ExpandBoundingBoxs(bboxs []*BoundingBox) *BoundingBox {
 	var bbox *BoundingBox
+	if len(bboxs) > 0 {
+		bbox = bboxs[0]
+	}
 	for _, temp_bbox := range bboxs[1:] {
 		bbox = BoundingBoxsFromTwoBBox(bbox, temp_bbox)
 	}
