@@ -25,11 +25,12 @@ type Feature struct {
 
 func NewFeature(geometry Geometry) *Feature {
 	return &Feature{
-		Type:        "Feature",
-		Geometry:    geometry,
-		BoundingBox: BoundingBoxFromGeometry(geometry),
-		Properties:  make(map[string]interface{}),
-		ExtData:     make(map[string]interface{}),
+		Type:         "Feature",
+		Geometry:     geometry,
+		GeometryData: *NewGeometryData(geometry),
+		BoundingBox:  BoundingBoxFromGeometry(geometry),
+		Properties:   make(map[string]interface{}),
+		ExtData:      make(map[string]interface{}),
 	}
 }
 
