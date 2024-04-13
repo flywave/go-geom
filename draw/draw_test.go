@@ -1,6 +1,7 @@
 package draw_test
 
 import (
+	"bytes"
 	"math/rand"
 	"os"
 	"testing"
@@ -19,8 +20,10 @@ func TestDraw(t *testing.T) {
 	opt := draw.DefaultDrawOptions()
 	opt.Col = col
 
+	buf := bytes.NewBuffer([]byte{})
+
 	gr, _ := draw.NewGeojsonRender(opt)
-	gr.Render(9)
+	gr.RenderToPngWriter([2]int{160, 160}, buf)
 }
 
 func TestLines(t *testing.T) {

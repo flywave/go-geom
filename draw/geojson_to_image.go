@@ -2,6 +2,7 @@ package draw
 
 import (
 	"errors"
+	"io"
 	"math"
 
 	"github.com/flywave/go-geom"
@@ -93,12 +94,10 @@ func processLine(g *geom.GeometryData, fn func([][]float64)) {
 	}
 }
 
-func (g *GeojsonRender) Render(resolution float64) {
-	pixSize := [2]int{}
-	pixSize[0] = int(math.Ceil(g.localSize[0] / resolution))
-	pixSize[1] = int(math.Ceil(g.localSize[1] / resolution))
+func (g *GeojsonRender) RenderToPngWriter(rect [2]int, wt io.Writer) error {
+	resolution := float64(math.Ceil(g.localSize[0]) / float64(rect[0]))
 
-	dc := gg.NewContext(pixSize[0], pixSize[1])
+	dc := gg.NewContext(rect[0], rect[1])
 	dc.SetRGBA255(int(g.opt.BackGroundColor[0]), int(g.opt.BackGroundColor[1]), int(g.opt.BackGroundColor[2]), int(g.opt.BackGroundColor[3]))
 	dc.Clear()
 	dc.InvertY()
@@ -116,5 +115,5 @@ func (g *GeojsonRender) Render(resolution float64) {
 		processLine(&f.GeometryData, fn)
 
 	}
-	dc.SavePNG("./out.png")
+	return dc.EncodePNG(wt)
 }
