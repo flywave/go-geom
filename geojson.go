@@ -33,8 +33,6 @@ type GeometryData struct {
 
 func NewGeometryData(geometry Geometry) *GeometryData {
 	switch geo := geometry.(type) {
-	default:
-		return nil
 	case Point:
 		var ret GeometryData
 		ret.Type = GeometryPoint
@@ -103,6 +101,8 @@ func NewGeometryData(geometry Geometry) *GeometryData {
 			ret.Geometries[i] = NewGeometryData(geo.Geometries()[i])
 		}
 		return &ret
+	default:
+		return nil
 	}
 }
 
