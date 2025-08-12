@@ -41,11 +41,11 @@ func (fc FeatureCollection) MarshalJSON() ([]byte, error) {
 		fcol.Features = make([]*Feature, 0)
 	}
 
-	if fc.CRS != nil && len(fc.CRS) != 0 {
+	if len(fc.CRS) != 0 {
 		fcol.CRS = fc.CRS
 	}
 
-	if fc.Properties != nil && len(fc.Properties) != 0 {
+	if len(fc.Properties) != 0 {
 		fcol.Properties = fc.Properties
 	}
 

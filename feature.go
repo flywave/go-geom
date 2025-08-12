@@ -92,10 +92,10 @@ func (f Feature) MarshalJSON() ([]byte, error) {
 	if f.BoundingBox != nil && len(f.BoundingBox) != 0 {
 		fea.BoundingBox = f.BoundingBox
 	}
-	if f.Properties != nil && len(f.Properties) != 0 {
+	if len(f.Properties) != 0 {
 		fea.Properties = f.Properties
 	}
-	if f.CRS != nil && len(f.CRS) != 0 {
+	if len(f.CRS) != 0 {
 		fea.CRS = f.CRS
 	}
 
@@ -202,7 +202,7 @@ func (f *Feature) PropertyMustString(key string, def ...string) string {
 	return defaul
 }
 
-func decodeBoundingBox(bb interface{}) ([]float64, error) {
+func DecodeBoundingBox(bb interface{}) ([]float64, error) {
 	if bb == nil {
 		return nil, nil
 	}
@@ -318,10 +318,10 @@ func BoundingBoxsFromTwoBBox(bb1 *BoundingBox, bb2 *BoundingBox) *BoundingBox {
 }
 
 func ExpandBoundingBoxs(bboxs []*BoundingBox) *BoundingBox {
-	var bbox *BoundingBox
-	if len(bboxs) > 0 {
-		bbox = bboxs[0]
+	if len(bboxs) == 0 {
+		return nil
 	}
+	bbox := bboxs[0]
 	for _, temp_bbox := range bboxs[1:] {
 		bbox = BoundingBoxsFromTwoBBox(bbox, temp_bbox)
 	}
@@ -381,9 +381,9 @@ func BoundingBoxFromGeometryCollection(gs []Geometry) *BoundingBox {
 
 func BoundingBoxFromGeometry(g Geometry) *BoundingBox {
 	switch t := (g).(type) {
-	case Point:
-		return BoundingBoxFromPointGeometry(t.Data())
 	case Point3:
+		return BoundingBoxFromPointGeometry(t.Data())
+	case Point:
 		return BoundingBoxFromPointGeometry(t.Data())
 	case MultiPoint:
 		return BoundingBoxFromMultiPointGeometry(t.Data())
@@ -491,30 +491,25 @@ func ProcessMultiPolygonGeometry(multipolygon [][][][]float64, fn func([]float64
 }
 
 func GetKeyDifs(f1, f2 map[string]interface{}) ([]string, []string) {
-	keys1 := []string{}
-	k1map := map[string]string{}
+	k1map := make(map[string]struct{})
+	k2map := make(map[string]struct{})
+
 	for k := range f1 {
-		keys1 = append(keys1, k)
-		k1map[k] = ""
+		k1map[k] = struct{}{}
 	}
-	keys2 := []string{}
-	k2map := map[string]string{}
 	for k := range f2 {
-		keys2 = append(keys2, k)
-		k2map[k] = ""
+		k2map[k] = struct{}{}
 	}
 
 	k1dif := []string{}
 	for k := range k1map {
-		_, boolval := k2map[k]
-		if !boolval {
+		if _, exists := k2map[k]; !exists {
 			k1dif = append(k1dif, k)
 		}
 	}
 	k2dif := []string{}
 	for k := range k2map {
-		_, boolval := k1map[k]
-		if !boolval {
+		if _, exists := k1map[k]; !exists {
 			k2dif = append(k2dif, k)
 		}
 	}

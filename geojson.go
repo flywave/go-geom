@@ -33,12 +33,12 @@ type GeometryData struct {
 
 func NewGeometryData(geometry Geometry) *GeometryData {
 	switch geo := geometry.(type) {
-	case Point:
+	case Point3:
 		var ret GeometryData
 		ret.Type = GeometryPoint
 		ret.Point = geo.Data()
 		return &ret
-	case Point3:
+	case Point:
 		var ret GeometryData
 		ret.Type = GeometryPoint
 		ret.Point = geo.Data()
@@ -162,10 +162,12 @@ func (g GeometryData) MarshalJSON() ([]byte, error) {
 		Coordinates interface{}            `json:"coordinates,omitempty"`
 		Geometries  interface{}            `json:"geometries,omitempty"`
 		CRS         map[string]interface{} `json:"crs,omitempty"`
+		EPSG        int                    `json:"epsg,omitempty"`
 	}
 
 	geo := &geometry{
 		Type: g.Type,
+		EPSG: g.EPSG,
 	}
 
 	if g.BoundingBox != nil && len(g.BoundingBox) != 0 {
@@ -219,11 +221,11 @@ func (g *GeometryData) GetType() string {
 func (g *GeometryData) Scan(value interface{}) error {
 	var data []byte
 
-	switch value.(type) {
+	switch value := value.(type) {
 	case string:
-		data = []byte(value.(string))
+		data = []byte(value)
 	case []byte:
-		data = value.([]byte)
+		data = value
 	default:
 		return errors.New("unable to parse this type into geojson")
 	}
@@ -243,10 +245,94 @@ func DecodeGeometry(g *GeometryData, object map[string]interface{}) error {
 		return errors.New("type property not string")
 	}
 
+	// 处理BoundingBox
+	if bbox, ok := object["bbox"]; ok {
+		// 检查是否是二维数组形式 [[minx, miny, minz], [maxx, maxy, maxz]]
+		if bboxArray, ok := bbox.([]interface{}); ok && len(bboxArray) == 2 {
+			minArray, ok1 := bboxArray[0].([]interface{})
+			maxArray, ok2 := bboxArray[1].([]interface{})
+			if ok1 && ok2 && len(minArray) >= 2 && len(maxArray) >= 2 {
+				var min [3]float64
+				var max [3]float64
+
+				// 解析min数组
+				if minX, ok := minArray[0].(float64); ok {
+					min[0] = minX
+				}
+				if minY, ok := minArray[1].(float64); ok {
+					min[1] = minY
+				}
+				if len(minArray) >= 3 {
+					if minZ, ok := minArray[2].(float64); ok {
+						min[2] = minZ
+					}
+				}
+
+				// 解析max数组
+				if maxX, ok := maxArray[0].(float64); ok {
+					max[0] = maxX
+				}
+				if maxY, ok := maxArray[1].(float64); ok {
+					max[1] = maxY
+				}
+				if len(maxArray) >= 3 {
+					if maxZ, ok := maxArray[2].(float64); ok {
+						max[2] = maxZ
+					}
+				}
+
+				g.BoundingBox = &BoundingBox{min, max}
+			}
+		} else if bboxArray, ok := bbox.([]interface{}); ok && len(bboxArray) >= 4 {
+			var min [3]float64
+			var max [3]float64
+
+			// 二维情况
+			if len(bboxArray) == 4 {
+				if minX, ok := bboxArray[0].(float64); ok {
+					min[0] = minX
+				}
+				if minY, ok := bboxArray[1].(float64); ok {
+					min[1] = minY
+				}
+				if maxX, ok := bboxArray[2].(float64); ok {
+					max[0] = maxX
+				}
+				if maxY, ok := bboxArray[3].(float64); ok {
+					max[1] = maxY
+				}
+			} else if len(bboxArray) == 6 {
+				if minX, ok := bboxArray[0].(float64); ok {
+					min[0] = minX
+				}
+				if minY, ok := bboxArray[1].(float64); ok {
+					min[1] = minY
+				}
+				if minZ, ok := bboxArray[2].(float64); ok {
+					min[2] = minZ
+				}
+				if maxX, ok := bboxArray[3].(float64); ok {
+					max[0] = maxX
+				}
+				if maxY, ok := bboxArray[4].(float64); ok {
+					max[1] = maxY
+				}
+				if maxZ, ok := bboxArray[5].(float64); ok {
+					max[2] = maxZ
+				}
+			}
+
+			g.BoundingBox = &BoundingBox{min, max}
+		}
+	}
+
+	// 处理EPSG
 	if s, ok := object["epsg"]; ok {
-		t, ok1 := s.(float64)
-		if ok1 {
-			g.EPSG = int(t)
+		switch v := s.(type) {
+		case float64:
+			g.EPSG = int(v)
+		case int:
+			g.EPSG = v
 		}
 	}
 

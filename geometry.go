@@ -18,7 +18,9 @@ func (b *BoundingBox) UnmarshalJSON(data []byte) error {
 			b[1] = [3]float64{t[2], t[3], 0}
 		} else if len(t) == 6 {
 			b[0] = [3]float64{t[0], t[1], t[2]}
-			b[1] = [3]float64{t[2], t[3], t[5]}
+			b[1] = [3]float64{t[3], t[4], t[5]}
+		} else {
+			return fmt.Errorf("invalid bounding box array length: %d", len(t))
 		}
 		return nil
 	}
@@ -126,7 +128,10 @@ func GeometryAsString(g Geometry) string {
 		}
 		rstring += "]"
 		return rstring
-
+	case Point3:
+		return fmt.Sprintf("Point3( %v %v %v )", geo.X(), geo.Y(), geo.Z())
+	case Point:
+		return fmt.Sprintf("Point( %v %v )", geo.X(), geo.Y())
 	default:
 		return fmt.Sprintf("%v", g)
 	}
@@ -136,12 +141,12 @@ func GeometryAsMap(g Geometry) map[string]interface{} {
 	js := make(map[string]interface{})
 	var vals []map[string]interface{}
 	switch geo := g.(type) {
-	case Point:
-		js["type"] = g.GetType()
-		js["value"] = []float64{geo.X(), geo.Y()}
 	case Point3:
 		js["type"] = g.GetType()
 		js["value"] = []float64{geo.X(), geo.Y(), geo.Z()}
+	case Point:
+		js["type"] = g.GetType()
+		js["value"] = []float64{geo.X(), geo.Y()}
 	case MultiPoint:
 		js["type"] = g.GetType()
 		for _, p := range geo.Points() {
@@ -390,18 +395,18 @@ func IsMultiPolygon3Equal(mp1, mp2 MultiPolygon3) bool {
 
 func IsGeometryEqual(g1, g2 Geometry) bool {
 	switch geo1 := g1.(type) {
-	case Point:
-		geo2, ok := g2.(Point)
-		if !ok {
-			return false
-		}
-		return IsPointEqual(geo1, geo2)
 	case Point3:
 		geo2, ok := g2.(Point3)
 		if !ok {
 			return false
 		}
 		return IsPoint3Equal(geo1, geo2)
+	case Point:
+		geo2, ok := g2.(Point)
+		if !ok {
+			return false
+		}
+		return IsPointEqual(geo1, geo2)
 	case MultiPoint:
 		geo2, ok := g2.(MultiPoint)
 		if !ok {
@@ -487,9 +492,9 @@ func IsCollectionEqual(c1, c2 Collection) bool {
 
 func IsGeometryEmpty(geom Geometry) bool {
 	switch t := geom.(type) {
-	case Point:
-		return len(t.Data()) == 0
 	case Point3:
+		return len(t.Data()) == 0
+	case Point:
 		return len(t.Data()) == 0
 	case MultiPoint:
 		return len(t.Data()) == 0
