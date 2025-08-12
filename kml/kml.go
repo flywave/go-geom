@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/flywave/go-geom"
-	"github.com/twpayne/go-kml"
+	"github.com/twpayne/go-kml/v3"
 )
 
 func Encode(g geom.Geometry) (kml.Element, error) {
